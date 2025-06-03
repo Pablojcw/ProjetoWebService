@@ -22,12 +22,14 @@ public class UserEntity {
     private String email;
 
 
-
     @DBRef(lazy = true) // This annotation is used to reference another collection in MongoDB
     private List<PostEntity> post = new ArrayList<>(); // assume PostEntity is another entity class
 
+    public UserEntity() {
 
-    public UserEntity(String name , String email) {
+    }
+
+    public UserEntity(String name, String email) {
         this.name = name;
         this.email = email;
 

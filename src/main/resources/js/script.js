@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-alert("Script loaded successfully");
 document.getElementById("user-form").addEventListener("submit", function(event) {
     event.preventDefault();
 
