@@ -1,11 +1,15 @@
 package com.app.api.controller;
 
+import com.app.api.dto.CadastraUsuarioDto;
 import com.app.api.dto.UserDto;
+import com.app.domain.model.NewUser;
+import com.app.domain.model.User;
 import com.app.infrastructure.repository.entity.PostEntity;
 import com.app.infrastructure.repository.entity.UserEntity;
-import com.app.infrastructure.repository.impl.UserServiceImpl;
+import com.app.infrastructure.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -32,34 +36,33 @@ public class UserResorceController {
     }
 
     // buscar usuário por id
-    @GetMapping(value = "/buscar")
-    public ResponseEntity<UserDto> findById(@PathVariable String id) {
+    @GetMapping(value = "/buscar/{id}")
+    public ResponseEntity<UserDto> findById(@PathVariable("id") String id) {
         UserEntity obj = userServiceImpl.findById(id);
 
         return ResponseEntity.ok().body(new UserDto(obj));
     }
 
     // inserir um novo usuário
-    @PostMapping(value = "/inserir")
-    public ResponseEntity<Void> insert(@RequestBody UserDto objetoDto) {
-        UserEntity objeto = userServiceImpl.fromDto(objetoDto);
-        objeto = userServiceImpl.Insert(objeto);
+    @PostMapping(value = "/inserir", consumes = "application/x-www-form-urlencoded;charset=UTF-8")
+    public ResponseEntity<Void> insert(CadastraUsuarioDto cadastraUsuarioDto) {
+        NewUser objeto = new NewUser(cadastraUsuarioDto.getName(), cadastraUsuarioDto.getEmail());
+        User user = userServiceImpl.Insert(objeto);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}").buildAndExpand(objeto.getId()).toUri();
-        return ResponseEntity.created(null).build();
-
+                .path("/{id}").buildAndExpand(user.getId()).toUri();
+        return ResponseEntity.created(location).build();
     }
 
     // excluir um usuário
-    @DeleteMapping(value = "/delete")
-    public ResponseEntity<Void> excluir(@PathVariable String id) {
+    @RequestMapping(value = "/excluir/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Void> excluir(@PathVariable("id") String id) {
         userServiceImpl.excluir(id);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     // atualizar um usuário
     @PostMapping(value = "/atualizar")
-    public ResponseEntity<Void> update(@RequestBody UserDto objetoDto, @PathVariable String id) {
+    public ResponseEntity<Void> update(@RequestBody UserDto objetoDto) {
         UserEntity objeto = userServiceImpl.fromDto(objetoDto);
         objeto = userServiceImpl.update(objeto);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -67,8 +70,9 @@ public class UserResorceController {
         return ResponseEntity.created(location).build();
     }
 
-    @PostMapping(value = "/Post")
-    public ResponseEntity<List<PostEntity>> post(@PathVariable String id) {
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping(value = "/Post/{id}")
+    public ResponseEntity<List<PostEntity>> post(@PathVariable("id") String id) {
         UserEntity objeto = userServiceImpl.findById(id);
         if (objeto == null) {
             return ResponseEntity.notFound().build();

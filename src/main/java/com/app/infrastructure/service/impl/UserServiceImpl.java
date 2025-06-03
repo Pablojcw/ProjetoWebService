@@ -1,6 +1,8 @@
-package com.app.infrastructure.repository.impl;
+package com.app.infrastructure.service.impl;
 
 import com.app.api.dto.UserDto;
+import com.app.domain.model.NewUser;
+import com.app.domain.model.User;
 import com.app.infrastructure.repository.UserRepository;
 import com.app.infrastructure.repository.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +28,10 @@ public class UserServiceImpl {
         return user;
     }
 
-    public UserEntity Insert(UserEntity objeto) {
-        if (objeto.getId() != null) {
-            UserEntity naoExisteUsuario = repository.findById(objeto.getId()).orElse(null);
-        }
-        return repository.save(objeto);
+    public User Insert(NewUser newUser) {
+        UserEntity objeto = new UserEntity(newUser.getName(), newUser.getEmail());
+        UserEntity userEntity =  repository.save(objeto);
+        return new User(userEntity.getId(), userEntity.getName(), userEntity.getEmail());
     }
 
     public void excluir(String id) {

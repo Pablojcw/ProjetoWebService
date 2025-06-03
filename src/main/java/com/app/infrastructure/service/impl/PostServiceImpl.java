@@ -1,4 +1,4 @@
-package com.app.infrastructure.repository.impl;
+package com.app.infrastructure.service.impl;
 
 import com.app.infrastructure.repository.PostRepository;
 import com.app.infrastructure.repository.entity.PostEntity;
@@ -23,7 +23,7 @@ public class PostServiceImpl {
     }
 
     public List<PostEntity> findByTitle(String text) {
-        return repository.suorcgTitle(text);
+        return repository.findByTitleContainingIgnoreCase(text);
     }
 
 }

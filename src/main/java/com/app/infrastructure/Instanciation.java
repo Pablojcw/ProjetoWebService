@@ -30,10 +30,10 @@ public class Instanciation implements CommandLineRunner {
         sdf.setTimeZone(TimeZone.getTimeZone("gnew York"));
 
         // Clear existing data
-        userRepository.deleteAll();
-        postRepository.deleteAll();
+       // userRepository.deleteAll();
+        //postRepository.deleteAll();
 
-        UserEntity maria = new UserEntity(null, "Maria Brown", "maria@gmail.com");
+      /*  UserEntity maria = new UserEntity(null, "Maria Brown", "maria@gmail.com");
         UserEntity alex = new UserEntity(null, "Alex Green", "alex@gmail.com");
         UserEntity bob = new UserEntity(null, "Bob Grey", "bob@gmail.com");
 
@@ -55,7 +55,7 @@ public class Instanciation implements CommandLineRunner {
 
         maria.getPost().addAll(Arrays.asList(post1, post2));// adiciona os posts ao usuario maria
 
-        userRepository.save(maria); // atualiza o usuario maria com os posts
+        userRepository.save(maria); // atualiza o usuario maria com os posts*/
 
     }
 }

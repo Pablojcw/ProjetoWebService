@@ -1,4 +1,4 @@
-package com.app.infrastructure.service.exeption;
+package com.app.exeption.exeption;
 
 import java.io.Serializable;
 

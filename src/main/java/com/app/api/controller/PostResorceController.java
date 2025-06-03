@@ -2,7 +2,7 @@ package com.app.api.controller;
 
 import com.app.api.controller.URL.URLController;
 import com.app.infrastructure.repository.entity.PostEntity;
-import com.app.infrastructure.repository.impl.PostServiceImpl;
+import com.app.infrastructure.service.impl.PostServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ public class PostResorceController {
 
     // buscar usuário por id
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity<PostEntity> findById(@PathVariable String id) {
+    public ResponseEntity<PostEntity> findById(@PathVariable("id") String id) {
         PostEntity obj = postServiceImpl.findById(id);
 
         return ResponseEntity.ok().body(obj);

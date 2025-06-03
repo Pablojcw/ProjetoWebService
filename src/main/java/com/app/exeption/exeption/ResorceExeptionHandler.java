@@ -1,4 +1,4 @@
-package com.app.infrastructure.service.exeption;
+package com.app.exeption.exeption;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
