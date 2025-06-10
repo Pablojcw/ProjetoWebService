@@ -1,46 +1,63 @@
 package com.app.api.controller;
 
 import com.app.api.dto.AuthRequestDto;
-import com.app.domain.JwtUtil;
 import com.app.domain.model.AuthResponse;
-import com.app.domain.service.dto.MyUserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.app.domain.model.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationService authenticationService;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private MyUserDetailsServiceImpl userDetailsService;
+    public AuthController(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
 
     @PostMapping(path = "/login", consumes = "application/x-www-form-urlencoded;charset=UTF-8")
-    public ResponseEntity<AuthResponse> authenticate(AuthRequestDto request) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-            );
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
-            final String jwt = jwtUtil.generateToken(userDetails);
+    public ResponseEntity<AuthResponse> receiveFormData(AuthRequestDto authRequestDto, HttpServletResponse response) {
+        Optional<AuthResponse> authResponse = authenticationService.authenticate(authRequestDto.getUsername(), authRequestDto.getPassword(), response);
 
-            return ResponseEntity.ok(new AuthResponse(jwt));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse("Credenciais inválidas"));
+        return authResponse.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
+        Optional<AuthResponse> authResponse = authenticationService.refreshAccessToken(request, response);
+
+        if (authResponse.isPresent()) {
+            return ResponseEntity.ok(authResponse);
         }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        authenticationService.logout(request);
+
+        // Expire cookie
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+                .path("/auth/refresh-token")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.ok("Logged out successfully");
     }
 }
 
